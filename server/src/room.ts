@@ -12,7 +12,7 @@ function randomCode() { return Array.from({length:6}, () => CODE_CHARS[randomInt
 export class DarkRoom extends Room<{state: InstanceType<typeof GameState>}> {
   maxClients = 2;
   state = new GameState();
-  private inputs = new Map<string, Input>();
+  private playerInputs = new Map<string, Input>();
   private uids = new Map<string, string>();
   private monsterTick = 0;
   private roam = {x:monsterSpawn.x, y:monsterSpawn.y};
@@ -57,7 +57,7 @@ export class DarkRoom extends Room<{state: InstanceType<typeof GameState>}> {
       const x = Number(msg?.x), y = Number(msg?.y);
       if (!Number.isFinite(x) || !Number.isFinite(y)) return;
       const len = Math.hypot(x,y);
-      this.inputs.set(client.sessionId, {x:len>1?x/len:Math.max(-1,Math.min(1,x)),
+      this.playerInputs.set(client.sessionId, {x:len>1?x/len:Math.max(-1,Math.min(1,x)),
         y:len>1?y/len:Math.max(-1,Math.min(1,y)), sprint:msg?.sprint===true});
     },
     ready: (client: Client) => {
@@ -96,7 +96,7 @@ export class DarkRoom extends Room<{state: InstanceType<typeof GameState>}> {
   private update(dt:number) {
     if(this.state.phase!=='playing') return;
     for(const [id,p] of this.state.players) {
-      const input=this.inputs.get(id)??emptyInput;
+      const input=this.playerInputs.get(id)??emptyInput;
       const speed=input.sprint?3.7:2.7;
       const nx=p.x+input.x*speed*dt, ny=p.y+input.y*speed*dt;
       if(freeAt(nx,p.y,this.state.doorOpen)) p.x=nx;
@@ -142,7 +142,7 @@ export class DarkRoom extends Room<{state: InstanceType<typeof GameState>}> {
   }
 
   async onLeave(client: Client) {
-    this.state.players.delete(client.sessionId);this.inputs.delete(client.sessionId);this.uids.delete(client.sessionId);
+    this.state.players.delete(client.sessionId);this.playerInputs.delete(client.sessionId);this.uids.delete(client.sessionId);
     if(this.state.host===client.sessionId) this.state.host=[...this.state.players.keys()][0]??'';
     if(this.state.phase==='playing') { this.state.phase='lobby'; this.state.notice='Teammate disconnected; waiting for a new room'; }
     for(const p of this.state.players.values()) p.ready=false;
