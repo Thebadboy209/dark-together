@@ -13,6 +13,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Expand source archive
         run: |
+          if [ ! -f .bootstrap/part-03 ]; then echo "Already imported"; exit 0; fi
           cat .bootstrap/part-0{0..3} | base64 --decode > /tmp/dark-together.tar.xz
           echo "cba685bed9b7c03eaa3aa354cf8e61051b1afa8ac847703b57f083979d04ac5e  /tmp/dark-together.tar.xz" | sha256sum --check
           tar -xJf /tmp/dark-together.tar.xz
