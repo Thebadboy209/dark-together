@@ -23,5 +23,6 @@
   },
   "engines": {
     "node": ">=20"
-  }
+  },
+  "description": "Colyseus authoritative co-op horror game server for Unity PC and mobile"
 }
