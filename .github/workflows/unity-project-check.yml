@@ -1,0 +1,42 @@
+name: Unity project source validation (not an Editor build)
+on:
+  push:
+    paths:
+      - "unity-client/**"
+      - "server/data/hospital_map.json"
+      - ".github/workflows/unity-project-check.yml"
+  pull_request:
+    paths:
+      - "unity-client/**"
+      - "server/data/hospital_map.json"
+      - ".github/workflows/unity-project-check.yml"
+  workflow_dispatch:
+jobs:
+  source-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate Unity project metadata and shared map
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { readFileSync, existsSync } from 'node:fs';
+          const read=(p)=>readFileSync(p,'utf8');
+          const manifest=JSON.parse(read('unity-client/Packages/manifest.json'));
+          assert.ok(manifest.dependencies['io.colyseus.sdk']?.includes('colyseus-unity-sdk'));
+          assert.match(read('unity-client/ProjectSettings/ProjectVersion.txt'), /^m_EditorVersion: 6000\./);
+          const serverMap=JSON.parse(read('server/data/hospital_map.json'));
+          const clientMap=JSON.parse(read('unity-client/Assets/Resources/hospital_map.json'));
+          assert.deepEqual(clientMap,serverMap,'Server and client maps must match');
+          for(const p of [
+            'unity-client/Assets/Scripts/DarkTogether.cs',
+            'unity-client/Assets/Editor/CreateGameScene.cs',
+            'unity-client/Assets/Editor/BuildGame.cs',
+            'server/src/main.ts'
+          ]) assert.ok(existsSync(p), 'Missing '+p);
+          console.log('Unity project sources and shared map validated; Unity compilation requires Unity Editor.');
+          NODE
