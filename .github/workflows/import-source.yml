@@ -2,7 +2,7 @@ name: Import Unity 2D project
 on:
   push:
     paths:
-      - ".bootstrap/source.tar.xz.b64"
+      - ".bootstrap/part-03"
   workflow_dispatch:
 permissions:
   contents: write
@@ -11,16 +11,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          persist-credentials: true
-      - name: Expand checked-in source archive
+      - name: Expand source archive
         run: |
-          base64 --decode .bootstrap/source.tar.xz.b64 > /tmp/dark-together-source.tar.xz
-          tar -xJf /tmp/dark-together-source.tar.xz
+          cat .bootstrap/part-0{0..3} | base64 --decode > /tmp/dark-together.tar.xz
+          echo "cba685bed9b7c03eaa3aa354cf8e61051b1afa8ac847703b57f083979d04ac5e  /tmp/dark-together.tar.xz" | sha256sum --check
+          tar -xJf /tmp/dark-together.tar.xz
           cp -a dark-together/. .
-          rm -rf dark-together
-          rm -f .bootstrap/source.tar.xz.b64
-          rmdir .bootstrap || true
+          rm -rf dark-together .bootstrap
       - name: Commit imported files
         run: |
           git config user.name "github-actions[bot]"
