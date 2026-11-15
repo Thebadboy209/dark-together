@@ -36,23 +36,34 @@ npm run dev
 The server listens on `ws://127.0.0.1:2567`. Run the server *before* pressing Play in Unity.
 If you change port via `PORT`, change the Unity server URL too.
 
-## 2. Create the Unity game
+## 2. Open the Unity game directly
 
-1. Unity Hub → **New Project** → **2D Core (Unity 6 LTS)** → Create.
-2. Copy **all contents** of this package's `unity-client/Assets/` folder into the new Unity project's `Assets/` folder.
-3. In Unity: Window → Package Manager → `+` → **Add package from git URL...**:
-   ```
-   https://github.com/colyseus/colyseus-unity-sdk.git#upm
-   ```
-   Official SDK: https://docs.colyseus.io/getting-started/unity
-4. Wait until import/compilation finishes. Menu **Dark Together → Generate Playable Scene**.
-5. Select `DARK TOGETHER - Game Controller` in Hierarchy. Set **Server Url** (default `ws://127.0.0.1:2567`).
-6. Press **Play** → **CREATE ROOM** → copy the code.
-7. Start a **second player** (separate build/Unity test instance), connect to the same server, enter code and **JOIN ROOM**.
-8. Each player presses **READY**. Host presses **START**.
+The repository now contains a Unity project at `unity-client/`, including
+`Assets/`, `Packages/manifest.json` (Colyseus SDK as a Git package) and
+`ProjectSettings/ProjectVersion.txt`. Unity Hub can import this folder directly.
 
-The generator editor menu saves the generated scene in `Assets/Scenes/DarkTogether.unity` and adds it to Build Settings.
-The scene, assets and visuals are generated through C# rather than requiring third-party artwork.
+1. Install **Unity 6.3 LTS** (project version: `6000.3.28f1`) and Git.
+2. Unity Hub → **Add project from disk** → select `unity-client/`.
+3. Open the project. Unity Package Manager installs Colyseus automatically from Git.
+4. Set **Active Input Handling = Both** in Player Settings (legacy keyboard/touch API used by this prototype).
+5. Menu **Dark Together → Generate Playable Scene** (first time only).
+6. Select the **DARK TOGETHER - Game Controller** and configure `serverUrl`
+   (local PC: `ws://127.0.0.1:2567`, phone: `ws://YOUR_PC_LAN_IP:2567`).
+7. Start the server (`cd server && npm install && npm run dev`).
+8. Press Play → **CREATE ROOM** → copy the code; join from another Unity build/client.
+9. Both players press READY; the host presses START.
+
+### Build menus
+
+Unity Editor provides these commands. Install the required Unity Build Support module first:
+
+- **Dark Together → Build → Windows x64** → `Builds/Windows/DarkTogether.exe`
+- **Dark Together → Build → Android APK** → `Builds/Android/DarkTogether.apk`
+- **Dark Together → Build → iOS Xcode Project** → `Builds/iOS/` (requires Mac/Xcode to sign)
+
+These menus run the Unity build pipeline; they do **not** prove that this project
+has passed actual device QA. Set the server URL and platform-specific permissions before building.
+For Android/iOS over the public Internet, use `wss://` (TLS) and a properly deployed backend.
 
 ### PC controls
 
