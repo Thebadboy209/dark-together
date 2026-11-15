@@ -25,6 +25,7 @@ public class DarkTogether : MonoBehaviour
     private Camera cam;
     private string[] rows;
     private string inputCode = "";
+    private string editableServerUrl = "";
     private string status = "Create a room or join with your friend's code";
     private string phase = "menu";
     private string sessionId = "";
@@ -43,6 +44,7 @@ public class DarkTogether : MonoBehaviour
     void Start()
     {
         Application.targetFrameRate = 60;
+        editableServerUrl = PlayerPrefs.GetString("dark_together_server", serverUrl);
         cam = Camera.main;
         if (cam == null)
         {
@@ -158,9 +160,16 @@ public class DarkTogether : MonoBehaviour
         busy=true;status="Connecting...";
         try
         {
+            string proposedUrl = editableServerUrl.Trim().TrimEnd('/');
+            if (!proposedUrl.StartsWith("ws://", StringComparison.OrdinalIgnoreCase) &&
+                !proposedUrl.StartsWith("wss://", StringComparison.OrdinalIgnoreCase))
+                throw new Exception("Server must start with ws:// or wss://");
+            serverUrl = proposedUrl;
+            PlayerPrefs.SetString("dark_together_server", serverUrl);
+            PlayerPrefs.Save();
             string token=await GetFirebaseToken();
-            client = new Client(serverUrl.Trim().TrimEnd('/'));
-            var opts = new Dictionary<string, object> { {"displayName", SystemInfo.deviceName.Substring(0, Math.Min(15, SystemInfo.deviceName.Length))} };
+            client = new Client(serverUrl);
+            var opts = new Dictionary<string, object> { {"displayName", "Player"} };
             if(!string.IsNullOrEmpty(token)) opts["firebaseToken"] = token;
             room = create ? await client.Create<DynamicSchema>("dark_together", opts)
                           : await client.JoinById<DynamicSchema>(inputCode.Trim().ToUpperInvariant(), opts);
@@ -296,11 +305,12 @@ public class DarkTogether : MonoBehaviour
             GUI.Box(new Rect(380,85,520,525),"",styleBox);
             GUI.Label(new Rect(400,110,480,62),"DARK TOGETHER",styleTitle);
             GUI.Label(new Rect(410,175,460,38),"2D CO-OP HORROR  •  PC + MOBILE",styleText);
-            GUI.Label(new Rect(420,229,440,45),"Server: " + serverUrl,styleText);
+            GUI.Label(new Rect(420,223,440,32),"SERVER URL (ws:// or wss://)",styleText);
+            editableServerUrl=GUI.TextField(new Rect(430,257,420,36),editableServerUrl,160);
             GUI.enabled=!busy;
-            if(GUI.Button(new Rect(460,290,360,62),"CREATE ROOM",styleButton))Connect(true);
-            inputCode=GUI.TextField(new Rect(460,375,360,38),inputCode.ToUpperInvariant(),8);
-            if(GUI.Button(new Rect(460,426,360,62),"JOIN ROOM",styleButton))Connect(false);
+            if(GUI.Button(new Rect(460,309,360,62),"CREATE ROOM",styleButton))Connect(true);
+            inputCode=GUI.TextField(new Rect(460,390,360,38),inputCode.ToUpperInvariant(),8);
+            if(GUI.Button(new Rect(460,439,360,62),"JOIN ROOM",styleButton))Connect(false);
             GUI.enabled=true;
             GUI.Label(new Rect(400,515,480,70),status,styleText);
         }
