@@ -146,7 +146,7 @@ export class DarkRoom extends Room<{state: InstanceType<typeof GameState>}> {
   onDrop(client: Client) {
     const player = this.state.players.get(client.sessionId);
     if (player) player.connected = false;
-    this.inputs.delete(client.sessionId); // stop moving a disconnected player
+    this.playerInputs.delete(client.sessionId); // stop moving a disconnected player
     this.state.notice = "Player connection lost. Waiting up to 45 seconds...";
     this.allowReconnection(client, 45);
   }
