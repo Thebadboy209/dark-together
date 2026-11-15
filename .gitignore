@@ -1,0 +1,22 @@
+# Unity
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+.vs/
+.vscode/
+*.csproj
+*.sln
+# Server
+node_modules/
+dist/
+.env
+*.log
+# Secrets
+*serviceAccount*.json
+*service-account*.json
+*.p12
+*.pem
