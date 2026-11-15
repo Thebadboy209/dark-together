@@ -7,6 +7,7 @@ export const Player = schema({
   dx: t.number().default(0),
   dy: t.number().default(-1),
   ready: t.boolean().default(false),
+  connected: t.boolean().default(true),
   light: t.boolean().default(true),
   name: t.string().default("Player")
 }, "DTPlayer");
