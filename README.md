@@ -13,7 +13,7 @@ A **source-code MVP**, not a finished commercially released game. It implements 
 
 **Caveats:** Unity build has not been opened/tested in the current build environment (Unity is not installed here),
 so Unity SDK API or platform-specific import adjustments may be necessary. Cloud Run and Firebase have not been deployed.
-The project does **not** yet implement reconnection, persistent checkpoints, polished sprites, audio, anti-cheat-hardening,
+The project implements a 45-second reconnect grace period on the server but does **not** yet implement persistent checkpoints, polished sprites, audio, anti-cheat-hardening,
 full mobile QA or a production account system. Avoid public production deployment until those items are completed.
 
 ## 0. Prerequisites
@@ -121,7 +121,7 @@ Grant the Cloud Run runtime service account the Firebase/Realtime Database permi
 
 **Scaling limits:** this MVP intentionally runs **one Cloud Run instance** (in-memory Colyseus presence/room state).
 For multiple instances, implement Redis-backed presence/driver, proper Colyseus routing and a persistent session strategy.
-Cloud Run WebSocket connections have request timeout limits; graceful reconnect/recovery is not implemented here.
+Cloud Run WebSocket connections have request timeout limits; server-side automatic reconnection grace is 45 seconds, but restoring rooms after an instance restart is not implemented.
 
 ## 5. GitHub
 
@@ -159,7 +159,7 @@ Original sources and actual third-party dependencies are documented in `docs/OPE
 ## 7. Next development steps
 
 - Verify Unity compilation using a pinned Colyseus Unity SDK commit.
-- Add reconnect / resumption with safe host handover, checkpoint persistence and token refresh.
+- Validate automatic reconnect on real Android/iOS devices; add persistent session recovery, checkpoint storage and Firebase token refresh.
 - Replace IMGUI with responsive UGUI/UIToolkit, tactile joystick and a proper menu.
 - Add licensed sprites, animation, sound, dynamic 2D lighting, multiple puzzles and saved progress.
 - Add complete server integration tests with 2 real Colyseus clients and device QA on Android and iOS.
