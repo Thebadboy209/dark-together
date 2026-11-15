@@ -1,0 +1,32 @@
+name: Import Unity 2D project
+on:
+  push:
+    paths:
+      - ".bootstrap/source.tar.xz.b64"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  import-source:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Expand checked-in source archive
+        run: |
+          base64 --decode .bootstrap/source.tar.xz.b64 > /tmp/dark-together-source.tar.xz
+          tar -xJf /tmp/dark-together-source.tar.xz
+          cp -a dark-together/. .
+          rm -rf dark-together
+          rm -f .bootstrap/source.tar.xz.b64
+          rmdir .bootstrap || true
+      - name: Commit imported files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "Import Unity 2D cross-platform multiplayer starter"
+            git push
+          fi
