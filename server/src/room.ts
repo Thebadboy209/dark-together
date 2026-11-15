@@ -141,6 +141,25 @@ export class DarkRoom extends Room<{state: InstanceType<typeof GameState>}> {
     }
   }
 
+  // Hold the same player seat for a short network interruption. This allows
+  // supported Colyseus clients to reconnect without losing co-op progress.
+  onDrop(client: Client) {
+    const player = this.state.players.get(client.sessionId);
+    if (player) player.connected = false;
+    this.inputs.delete(client.sessionId); // stop moving a disconnected player
+    this.state.notice = "Player connection lost. Waiting up to 45 seconds...";
+    this.allowReconnection(client, 45);
+  }
+
+  onReconnect(client: Client) {
+    const player = this.state.players.get(client.sessionId);
+    if (player) player.connected = true;
+    this.state.notice = this.state.phase === 'playing'
+      ? 'Partner reconnected; continue the escape'
+      : 'Player reconnected; get ready';
+    void this.publish();
+  }
+
   async onLeave(client: Client) {
     this.state.players.delete(client.sessionId);this.playerInputs.delete(client.sessionId);this.uids.delete(client.sessionId);
     if(this.state.host===client.sessionId) this.state.host=[...this.state.players.keys()][0]??'';
